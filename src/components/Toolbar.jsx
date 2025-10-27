@@ -1,9 +1,11 @@
 import React from 'react';
+import WindowControls from './WindowControls';
 
 const Toolbar = ({
   onNew,
   onOpen,
   onSave,
+  onExport,
   theme,
   onThemeToggle,
   fontSize,
@@ -13,40 +15,21 @@ const Toolbar = ({
   characterCount
 }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-light-surface dark:bg-dark-surface border-b border-light-border dark:border-dark-border">
-      {/* Left side - File operations */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onNew}
-          className="px-3 py-1.5 text-sm font-medium text-light-text dark:text-dark-text hover:bg-light-bg dark:hover:bg-dark-bg rounded transition-colors"
-          title="New File (Ctrl+N)"
-        >
-          New
-        </button>
-        <button
-          onClick={onOpen}
-          className="px-3 py-1.5 text-sm font-medium text-light-text dark:text-dark-text hover:bg-light-bg dark:hover:bg-dark-bg rounded transition-colors"
-          title="Open File (Ctrl+O)"
-        >
-          Open
-        </button>
-        <button
-          onClick={onSave}
-          className="px-3 py-1.5 text-sm font-medium text-light-text dark:text-dark-text hover:bg-light-bg dark:hover:bg-dark-bg rounded transition-colors"
-          title="Save File (Ctrl+S)"
-        >
-          Save
-        </button>
-
+    <div
+      className="flex items-center justify-between px-4 py-3 bg-light-surface dark:bg-dark-surface border-b border-light-border dark:border-dark-border"
+      style={{ WebkitAppRegion: 'drag' }}
+    >
+      {/* Left side - Current file name */}
+      <div className="flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' }}>
         {currentFileName && (
-          <span className="ml-4 text-sm text-light-text-muted dark:text-dark-text-muted">
+          <span className="text-sm text-light-text-muted dark:text-dark-text-muted">
             {currentFileName}
           </span>
         )}
       </div>
 
       {/* Right side - Theme and font controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3" style={{ WebkitAppRegion: 'no-drag' }}>
         {/* Font size controls */}
         <div className="flex items-center gap-2 border-r border-light-border dark:border-dark-border pr-3">
           <button
@@ -99,6 +82,18 @@ const Toolbar = ({
           </span>
         </div>
 
+        {/* Export button */}
+        <button
+          onClick={onExport}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-light-text dark:text-dark-text hover:bg-light-bg dark:hover:bg-dark-bg rounded transition-colors"
+          title="Export to HTML (Ctrl+E)"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Export
+        </button>
+
         {/* Theme toggle */}
         <button
           onClick={onThemeToggle}
@@ -115,6 +110,9 @@ const Toolbar = ({
             </svg>
           )}
         </button>
+
+        {/* Window Controls */}
+        <WindowControls />
       </div>
     </div>
   );
