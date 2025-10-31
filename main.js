@@ -251,7 +251,7 @@ ipcMain.handle('open-file', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
     filters: [
-      { name: 'Markdown Files', extensions: ['md', 'markdown', 'txt'] },
+      { name: 'HTML Files', extensions: ['html', 'htm'] },
       { name: 'All Files', extensions: ['*'] }
     ]
   });
@@ -290,10 +290,10 @@ ipcMain.handle('save-file', async (event, content, currentFilePath) => {
   if (!filePath) {
     const result = await dialog.showSaveDialog(mainWindow, {
       filters: [
-        { name: 'Markdown Files', extensions: ['md'] },
+        { name: 'HTML Files', extensions: ['html'] },
         { name: 'All Files', extensions: ['*'] }
       ],
-      defaultPath: 'untitled.md'
+      defaultPath: 'untitled.html'
     });
 
     if (result.canceled) {
@@ -317,7 +317,7 @@ ipcMain.handle('export-html', async (event, htmlContent) => {
       { name: 'HTML Files', extensions: ['html'] },
       { name: 'All Files', extensions: ['*'] }
     ],
-    defaultPath: 'markdown-export.html'
+    defaultPath: 'export.html'
   });
 
   if (result.canceled) {

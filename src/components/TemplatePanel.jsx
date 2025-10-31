@@ -1,38 +1,58 @@
 import React, { useState } from 'react';
 
 const TEMPLATES = {
-  Formatting: [
-    { name: 'Bold', icon: '𝗕', template: '**text**', cursorOffset: 2 },
-    { name: 'Italic', icon: '𝘐', template: '*text*', cursorOffset: 1 },
-    { name: 'Strikethrough', icon: 'S̶', template: '~~text~~', cursorOffset: 2 },
-    { name: 'Inline Code', icon: '</>', template: '`code`', cursorOffset: 1 },
-    { name: 'Blockquote', icon: '❝', template: '> Quote', cursorOffset: 2 },
-    { name: 'Horizontal Rule', icon: '─', template: '\n---\n', cursorOffset: 0 },
+  Components: [
+    {
+      name: 'Button',
+      icon: '🔘',
+      template: '<button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors">\n  Click Me\n</button>',
+      cursorOffset: 109
+    },
+    {
+      name: 'Card',
+      icon: '🃏',
+      template: '<div class="bg-white rounded-lg shadow-lg p-6 max-w-sm">\n  <h3 class="text-xl font-bold text-gray-800 mb-2">Card Title</h3>\n  <p class="text-gray-600">Card content goes here</p>\n</div>',
+      cursorOffset: 77
+    },
+    {
+      name: 'Form Input',
+      icon: '📝',
+      template: '<div class="mb-4">\n  <label class="block text-gray-700 text-sm font-bold mb-2" for="input-id">\n    Label\n  </label>\n  <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" id="input-id" type="text" placeholder="Enter text">\n</div>',
+      cursorOffset: 85
+    },
   ],
-  Lists: [
-    { name: 'Unordered List', icon: '•', template: '- Item 1\n- Item 2\n- Item 3', cursorOffset: 2 },
-    { name: 'Ordered List', icon: '1.', template: '1. First item\n2. Second item\n3. Third item', cursorOffset: 3 },
-    { name: 'Checklist', icon: '☑', template: '- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3', cursorOffset: 6 },
-  ],
-  Code: [
-    { name: 'Code Block', icon: '{ }', template: '```language\ncode here\n```', cursorOffset: 3 },
-  ],
-  Tables: [
-    { name: 'Table', icon: '⊞', template: '| Header 1 | Header 2 | Header 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |\n| Cell 4   | Cell 5   | Cell 6   |', cursorOffset: 2 },
-  ],
-  Media: [
-    { name: 'Link', icon: '🔗', template: '[link text](URL)', cursorOffset: 1 },
-    { name: 'Image', icon: '🖼', template: '![alt text](image-url)', cursorOffset: 2 },
+  Layout: [
+    {
+      name: 'Navigation Bar',
+      icon: '📊',
+      template: '<nav class="bg-gray-800 text-white p-4">\n  <div class="container mx-auto flex justify-between items-center">\n    <div class="text-xl font-bold">Logo</div>\n    <div class="space-x-4">\n      <a href="#" class="hover:text-gray-300">Home</a>\n      <a href="#" class="hover:text-gray-300">About</a>\n      <a href="#" class="hover:text-gray-300">Contact</a>\n    </div>\n  </div>\n</nav>',
+      cursorOffset: 122
+    },
+    {
+      name: 'Hero Section',
+      icon: '🎯',
+      template: '<section class="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-20">\n  <div class="container mx-auto text-center">\n    <h1 class="text-5xl font-bold mb-4">Welcome to Our Site</h1>\n    <p class="text-xl mb-8">Create something amazing today</p>\n    <button class="bg-white text-blue-600 font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition-colors">Get Started</button>\n  </div>\n</section>',
+      cursorOffset: 128
+    },
+    {
+      name: 'Grid Layout',
+      icon: '⊞',
+      template: '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">\n  <div class="bg-gray-100 p-6 rounded-lg">Grid Item 1</div>\n  <div class="bg-gray-100 p-6 rounded-lg">Grid Item 2</div>\n  <div class="bg-gray-100 p-6 rounded-lg">Grid Item 3</div>\n</div>',
+      cursorOffset: 110
+    },
+    {
+      name: 'Footer',
+      icon: '⬇️',
+      template: '<footer class="bg-gray-800 text-white py-8 mt-auto">\n  <div class="container mx-auto text-center">\n    <p>&copy; 2025 Your Company. All rights reserved.</p>\n    <div class="mt-4 space-x-4">\n      <a href="#" class="hover:text-gray-300">Privacy</a>\n      <a href="#" class="hover:text-gray-300">Terms</a>\n      <a href="#" class="hover:text-gray-300">Contact</a>\n    </div>\n  </div>\n</footer>',
+      cursorOffset: 103
+    },
   ],
 };
 
 const TemplatePanel = ({ isOpen, onToggle, onInsertTemplate }) => {
   const [expandedCategories, setExpandedCategories] = useState({
-    Formatting: true,
-    Lists: true,
-    Code: true,
-    Tables: true,
-    Media: true,
+    Components: true,
+    Layout: true,
   });
 
   const toggleCategory = (category) => {

@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { marked } from 'marked';
-import hljs from 'highlight.js';
 import Toolbar from './components/Toolbar';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
@@ -8,61 +6,112 @@ import SplitPane from './components/SplitPane';
 import TemplatePanel from './components/TemplatePanel';
 import Toast from './components/Toast';
 
-const DEFAULT_CONTENT = `# Welcome to Markdown Previewer
+const DEFAULT_CONTENT = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to HTML Code Editor</title>
+</head>
+<body>
+  <!-- Welcome Section -->
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div class="max-w-4xl mx-auto">
 
-## Features
+      <!-- Header -->
+      <header class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-gray-800 mb-4">HTML Code Editor</h1>
+        <p class="text-xl text-gray-600">Build beautiful interfaces with HTML, CSS, and JavaScript</p>
+      </header>
 
-- **Split-pane design** with draggable divider
-- **Live preview** with syntax highlighting
-- **Dark/Light theme** support
-- **Auto-save** to localStorage
-- **File operations** (New, Open, Save)
-- **Font size controls**
+      <!-- Feature Cards -->
+      <div class="grid md:grid-cols-3 gap-6 mb-12">
+        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div class="text-4xl mb-4">⚡</div>
+          <h3 class="text-xl font-semibold mb-2 text-gray-800">Live Preview</h3>
+          <p class="text-gray-600">See your changes instantly as you type</p>
+        </div>
 
-## Code Example
+        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div class="text-4xl mb-4">🎨</div>
+          <h3 class="text-xl font-semibold mb-2 text-gray-800">Tailwind CSS</h3>
+          <p class="text-gray-600">Utility-first CSS framework built-in</p>
+        </div>
 
-\`\`\`javascript
-function greet(name) {
-  console.log(\`Hello, \${name}!\`);
-}
+        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div class="text-4xl mb-4">🚀</div>
+          <h3 class="text-xl font-semibold mb-2 text-gray-800">Interactive</h3>
+          <p class="text-gray-600">Add JavaScript for dynamic behavior</p>
+        </div>
+      </div>
 
-greet('World');
-\`\`\`
+      <!-- Interactive Demo -->
+      <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Interactive Demo</h2>
+        <p class="text-gray-600 mb-4">Click the button below to see JavaScript in action:</p>
 
-## Lists
+        <button
+          id="demoButton"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+        >
+          Click Me!
+        </button>
 
-### Unordered List
-- Item 1
-- Item 2
-  - Nested item
-  - Another nested item
+        <p id="output" class="mt-4 text-lg font-semibold text-green-600"></p>
+      </div>
 
-### Ordered List
-1. First item
-2. Second item
-3. Third item
+      <!-- Getting Started -->
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Getting Started</h2>
+        <ul class="space-y-2 text-gray-700">
+          <li class="flex items-start">
+            <span class="text-blue-500 mr-2">✓</span>
+            Edit the HTML on the left to see changes instantly
+          </li>
+          <li class="flex items-start">
+            <span class="text-blue-500 mr-2">✓</span>
+            Use Tailwind CSS classes for styling (e.g., <code class="bg-gray-100 px-2 py-1 rounded">class="text-blue-500"</code>)
+          </li>
+          <li class="flex items-start">
+            <span class="text-blue-500 mr-2">✓</span>
+            Add JavaScript in &lt;script&gt; tags for interactivity
+          </li>
+          <li class="flex items-start">
+            <span class="text-blue-500 mr-2">✓</span>
+            Include custom CSS in &lt;style&gt; tags if needed
+          </li>
+        </ul>
+      </div>
 
-## Blockquote
+    </div>
+  </div>
 
-> This is a blockquote.
-> It can span multiple lines.
+  <!-- Custom Styles -->
+  <style>
+    /* Add your custom CSS here */
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+  </style>
 
-## Table
+  <!-- JavaScript -->
+  <script>
+    // Add your JavaScript here
+    let clickCount = 0;
 
-| Feature | Status |
-|---------|--------|
-| Markdown | ✓ |
-| Syntax Highlighting | ✓ |
-| Dark Theme | ✓ |
+    document.getElementById('demoButton').addEventListener('click', function() {
+      clickCount++;
+      const output = document.getElementById('output');
+      output.textContent = \`Button clicked \${clickCount} time\${clickCount !== 1 ? 's' : ''}!\`;
 
-## Link
-
-[Visit GitHub](https://github.com)
-
----
-
-**Happy writing!**
-`;
+      // Add a fun animation
+      this.classList.add('scale-95');
+      setTimeout(() => this.classList.remove('scale-95'), 100);
+    });
+  </script>
+</body>
+</html>`;
 
 function App() {
   const [content, setContent] = useState('');
@@ -93,9 +142,9 @@ function App() {
 
   // Load saved content and preferences on mount
   useEffect(() => {
-    const savedContent = localStorage.getItem('markdown-content');
-    const savedTheme = localStorage.getItem('markdown-theme');
-    const savedFontSize = localStorage.getItem('markdown-fontSize');
+    const savedContent = localStorage.getItem('html-editor-content');
+    const savedTheme = localStorage.getItem('html-editor-theme');
+    const savedFontSize = localStorage.getItem('html-editor-fontSize');
 
     setContent(savedContent || DEFAULT_CONTENT);
     setTheme(savedTheme || 'dark');
@@ -109,13 +158,13 @@ function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    localStorage.setItem('markdown-theme', theme);
+    localStorage.setItem('html-editor-theme', theme);
   }, [theme]);
 
   // Auto-save content to localStorage
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      localStorage.setItem('markdown-content', content);
+      localStorage.setItem('html-editor-content', content);
     }, 500);
 
     return () => clearTimeout(timeoutId);
@@ -123,7 +172,7 @@ function App() {
 
   // Save font size preference
   useEffect(() => {
-    localStorage.setItem('markdown-fontSize', fontSize.toString());
+    localStorage.setItem('html-editor-fontSize', fontSize.toString());
   }, [fontSize]);
 
   const handleNew = () => {
@@ -180,230 +229,8 @@ function App() {
     }
 
     try {
-      // Configure marked the same way as in Preview.jsx
-      marked.setOptions({
-        highlight: function(code, lang) {
-          if (lang && hljs.getLanguage(lang)) {
-            try {
-              return hljs.highlight(code, { language: lang }).value;
-            } catch (err) {
-              console.error(err);
-            }
-          }
-          return hljs.highlightAuto(code).value;
-        },
-        breaks: true,
-        gfm: true
-      });
-
-      // Convert markdown to HTML
-      const markdownHtml = marked(content || '# Welcome to Markdown Previewer\n\nStart typing to see the preview!');
-
-      // Create standalone HTML document
-      const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${currentFileName ? currentFileName.replace('.md', '') : 'Markdown Export'}</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/${theme === 'dark' ? 'github-dark' : 'github'}.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      background-color: ${theme === 'dark' ? '#1e1e1e' : '#f5f5f5'};
-      color: ${theme === 'dark' ? '#e0e0e0' : '#1a1a1a'};
-      padding: 32px 16px;
-      min-height: 100vh;
-    }
-
-    code {
-      font-family: 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
-    }
-
-    /* Custom scrollbar styles */
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: ${theme === 'dark' ? '#444' : '#888'};
-      border-radius: 5px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: ${theme === 'dark' ? '#666' : '#555'};
-    }
-
-    /* Markdown preview styles */
-    .markdown-preview {
-      line-height: 1.6;
-      word-wrap: break-word;
-      max-width: 1024px;
-      margin: 0 auto;
-      font-size: ${fontSize}px;
-    }
-
-    .markdown-preview h1,
-    .markdown-preview h2,
-    .markdown-preview h3,
-    .markdown-preview h4,
-    .markdown-preview h5,
-    .markdown-preview h6 {
-      margin-top: 24px;
-      margin-bottom: 16px;
-      font-weight: 600;
-      line-height: 1.25;
-    }
-
-    .markdown-preview h1 {
-      font-size: 2em;
-      border-bottom: 1px solid ${theme === 'dark' ? '#333' : '#e0e0e0'};
-      padding-bottom: 0.3em;
-    }
-
-    .markdown-preview h2 {
-      font-size: 1.5em;
-      border-bottom: 1px solid ${theme === 'dark' ? '#333' : '#e0e0e0'};
-      padding-bottom: 0.3em;
-    }
-
-    .markdown-preview h3 {
-      font-size: 1.25em;
-    }
-
-    .markdown-preview h4 {
-      font-size: 1em;
-    }
-
-    .markdown-preview h5 {
-      font-size: 0.875em;
-    }
-
-    .markdown-preview h6 {
-      font-size: 0.85em;
-      color: ${theme === 'dark' ? '#999' : '#666'};
-    }
-
-    .markdown-preview p {
-      margin-top: 0;
-      margin-bottom: 16px;
-    }
-
-    .markdown-preview ul,
-    .markdown-preview ol {
-      margin-top: 0;
-      margin-bottom: 16px;
-      padding-left: 2em;
-    }
-
-    .markdown-preview li + li {
-      margin-top: 0.25em;
-    }
-
-    .markdown-preview blockquote {
-      margin: 16px 0;
-      padding: 0 1em;
-      color: ${theme === 'dark' ? '#999' : '#666'};
-      border-left: 0.25em solid ${theme === 'dark' ? '#444' : '#ddd'};
-    }
-
-    .markdown-preview code {
-      padding: 0.2em 0.4em;
-      margin: 0;
-      font-size: 85%;
-      background-color: ${theme === 'dark' ? 'rgba(110, 118, 129, 0.4)' : 'rgba(175, 184, 193, 0.2)'};
-      border-radius: 6px;
-    }
-
-    .markdown-preview pre {
-      margin-bottom: 16px;
-      padding: 16px;
-      overflow: auto;
-      font-size: 85%;
-      line-height: 1.45;
-      background-color: ${theme === 'dark' ? '#161b22' : '#f6f8fa'};
-      border-radius: 6px;
-    }
-
-    .markdown-preview pre code {
-      display: inline;
-      padding: 0;
-      margin: 0;
-      overflow: visible;
-      line-height: inherit;
-      word-wrap: normal;
-      background-color: transparent;
-      border: 0;
-    }
-
-    .markdown-preview table {
-      border-spacing: 0;
-      border-collapse: collapse;
-      margin-bottom: 16px;
-      width: 100%;
-    }
-
-    .markdown-preview table th,
-    .markdown-preview table td {
-      padding: 6px 13px;
-      border: 1px solid ${theme === 'dark' ? '#333' : '#ddd'};
-    }
-
-    .markdown-preview table th {
-      font-weight: 600;
-      background-color: ${theme === 'dark' ? '#161b22' : '#f6f8fa'};
-    }
-
-    .markdown-preview table tr:nth-child(2n) {
-      background-color: ${theme === 'dark' ? '#0d1117' : '#f6f8fa'};
-    }
-
-    .markdown-preview a {
-      color: #3b82f6;
-      text-decoration: none;
-    }
-
-    .markdown-preview a:hover {
-      text-decoration: underline;
-    }
-
-    .markdown-preview hr {
-      height: 0.25em;
-      padding: 0;
-      margin: 24px 0;
-      background-color: ${theme === 'dark' ? '#30363d' : '#e1e4e8'};
-      border: 0;
-    }
-
-    .markdown-preview img {
-      max-width: 100%;
-      height: auto;
-    }
-  </style>
-</head>
-<body>
-  <div class="markdown-preview">
-    ${markdownHtml}
-  </div>
-</body>
-</html>`;
-
-      // Call Electron API to save file
-      const result = await window.electronAPI.exportHTML(htmlContent);
+      // Export the current HTML content as-is
+      const result = await window.electronAPI.exportHTML(content);
       if (result) {
         setToast({ show: true, message: `Exported to ${result}` });
       }
@@ -482,7 +309,7 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [content, currentFilePath, theme, fontSize, currentFileName]);
 
-  // Menu event listeners
+  // Menu event listeners - only set up once on mount
   useEffect(() => {
     if (!window.electronAPI) return;
 
@@ -491,7 +318,10 @@ function App() {
     window.electronAPI.onMenuSave(() => handleSave());
     window.electronAPI.onMenuExport(() => handleExport());
     window.electronAPI.onMenuOpenRecent((filePath) => handleOpenRecent(filePath));
-  }, [content, currentFilePath, theme, fontSize, currentFileName]);
+
+    // No cleanup needed - Electron IPC listeners persist for the app lifetime
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="h-screen w-screen flex flex-col bg-light-bg dark:bg-dark-bg overflow-hidden">
@@ -519,7 +349,7 @@ function App() {
                 onInsertTemplate={handleInsertTemplate}
               />
               <div className="flex-1 h-full overflow-hidden">
-                <Editor ref={editorRef} content={content} onChange={setContent} fontSize={fontSize} />
+                <Editor ref={editorRef} content={content} onChange={setContent} fontSize={fontSize} theme={theme} />
               </div>
             </div>
           }

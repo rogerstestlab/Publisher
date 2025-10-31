@@ -1,47 +1,75 @@
-import React, { useEffect, useRef } from 'react';
-import { marked } from 'marked';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/github-dark.css';
+import React, { useMemo } from 'react';
 
 const Preview = ({ content, fontSize }) => {
-  const previewRef = useRef(null);
+  const htmlContent = useMemo(() => {
+    try {
+      // Prepare the HTML content with Tailwind CDN injected
+      let html = content || '<!DOCTYPE html><html><body><p>Start typing HTML to see the preview...</p></body></html>';
 
-  useEffect(() => {
-    // Configure marked
-    marked.setOptions({
-      highlight: function(code, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-          try {
-            return hljs.highlight(code, { language: lang }).value;
-          } catch (err) {
-            console.error(err);
-          }
+      // Check if the HTML already has Tailwind CDN link
+      const hasTailwindCDN = html.includes('cdn.tailwindcss.com');
+
+      // If no Tailwind CDN, inject it before closing </head> or at the start of <body>
+      if (!hasTailwindCDN) {
+        const tailwindScript = '<script src="https://cdn.tailwindcss.com"></script>';
+
+        if (html.includes('</head>')) {
+          // Insert before closing </head> tag
+          html = html.replace('</head>', `  ${tailwindScript}\n</head>`);
+        } else if (html.includes('<body>')) {
+          // Insert after opening <body> tag
+          html = html.replace('<body>', `<body>\n  ${tailwindScript}`);
+        } else {
+          // Wrap content with basic HTML structure and Tailwind
+          html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${tailwindScript}
+</head>
+<body>
+  ${html}
+</body>
+</html>`;
         }
-        return hljs.highlightAuto(code).value;
-      },
-      breaks: true,
-      gfm: true
-    });
-  }, []);
+      }
 
-  useEffect(() => {
-    if (previewRef.current) {
-      // Highlight code blocks after content is rendered
-      previewRef.current.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightElement(block);
-      });
+      return html;
+    } catch (error) {
+      // Handle errors gracefully
+      console.error('Error rendering HTML:', error);
+      return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      background: #fee;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    <strong class="font-bold">Error rendering HTML:</strong>
+    <span class="block sm:inline">${error.message}</span>
+  </div>
+</body>
+</html>`;
     }
   }, [content]);
 
-  const html = marked(content || '# Welcome to Markdown Previewer\n\nStart typing to see the preview!');
-
   return (
-    <div className="h-full overflow-auto bg-light-bg dark:bg-dark-bg">
-      <div
-        ref={previewRef}
-        className="markdown-preview p-8 text-light-text dark:text-dark-text max-w-4xl mx-auto"
+    <div className="h-full overflow-hidden bg-light-bg dark:bg-dark-bg">
+      <iframe
+        srcDoc={htmlContent}
+        className="w-full h-full border-0"
+        title="HTML Preview"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
         style={{ fontSize: `${fontSize}px` }}
-        dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
   );

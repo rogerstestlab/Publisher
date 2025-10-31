@@ -1,97 +1,111 @@
-import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, forwardRef, useImperativeHandle } from 'react';
+import MonacoEditor from '@monaco-editor/react';
 
-const Editor = forwardRef(({ content, onChange, fontSize }, ref) => {
-  const textareaRef = useRef(null);
-  const lineNumbersRef = useRef(null);
+const Editor = forwardRef(({ content, onChange, fontSize, theme }, ref) => {
+  const editorRef = useRef(null);
 
-  // Expose method to insert text at cursor position
+  // Expose method to insert text at cursor position (for template insertion)
   useImperativeHandle(
     ref,
     () => ({
       insertTextAtCursor: (text, cursorOffset = 0) => {
-        const textarea = textareaRef.current;
-        if (!textarea) return;
+        const editor = editorRef.current;
+        if (!editor) return;
 
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const currentContent = content;
-
-        // Save current scroll position
-        const scrollTop = textarea.scrollTop;
-        const scrollLeft = textarea.scrollLeft;
+        const position = editor.getPosition();
+        const selection = editor.getSelection();
 
         // Insert text at cursor position
-        const newContent =
-          currentContent.substring(0, start) + text + currentContent.substring(end);
+        editor.executeEdits('', [
+          {
+            range: selection,
+            text: text,
+            forceMoveMarkers: true,
+          },
+        ]);
 
-        onChange(newContent);
+        // Calculate new cursor position
+        const lines = text.substring(0, cursorOffset).split('\n');
+        const lineCount = lines.length - 1;
+        const lastLineLength = lines[lines.length - 1].length;
 
-        // Set cursor position after insertion and restore scroll position
-        setTimeout(() => {
-          const newCursorPos = start + cursorOffset;
-          textarea.focus();
-          textarea.setSelectionRange(newCursorPos, newCursorPos);
+        const newPosition = {
+          lineNumber: position.lineNumber + lineCount,
+          column: lineCount > 0 ? lastLineLength + 1 : position.column + lastLineLength,
+        };
 
-          // Restore scroll position
-          textarea.scrollTop = scrollTop;
-          textarea.scrollLeft = scrollLeft;
-        }, 0);
+        // Set cursor position after insertion
+        editor.setPosition(newPosition);
+        editor.focus();
       },
     }),
-    [content, onChange]
+    []
   );
 
-  const handleScroll = (e) => {
-    if (lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = e.target.scrollTop;
-    }
+  const handleEditorDidMount = (editor) => {
+    editorRef.current = editor;
+    editor.focus();
   };
 
-  const handleInput = (e) => {
-    onChange(e.target.value);
+  const handleEditorChange = (value) => {
+    onChange(value || '');
   };
 
-  const lineCount = content.split('\n').length;
-  const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
+  // Monaco Editor options
+  const options = {
+    fontSize: fontSize,
+    fontFamily: "'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace",
+    lineNumbers: 'on',
+    wordWrap: 'on',
+    minimap: { enabled: false },
+    scrollBeyondLastLine: false,
+    automaticLayout: true,
+    tabSize: 2,
+    insertSpaces: true,
+    formatOnPaste: true,
+    formatOnType: true,
+    autoClosingBrackets: 'always',
+    autoClosingQuotes: 'always',
+    bracketPairColorization: { enabled: true },
+    folding: true,
+    lineDecorationsWidth: 10,
+    lineNumbersMinChars: 3,
+    renderLineHighlight: 'all',
+    scrollbar: {
+      vertical: 'visible',
+      horizontal: 'visible',
+      useShadows: false,
+      verticalScrollbarSize: 10,
+      horizontalScrollbarSize: 10,
+    },
+    contextmenu: true,
+    quickSuggestions: {
+      other: true,
+      comments: false,
+      strings: true,
+    },
+    suggest: {
+      showWords: false,
+    },
+  };
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      // Sync scroll position
-      if (lineNumbersRef.current) {
-        lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
-      }
-    }
-  }, [content]);
+  const monacoTheme = theme === 'dark' ? 'vs-dark' : 'vs';
 
   return (
-    <div className="flex h-full bg-light-surface dark:bg-dark-surface">
-      {/* Line Numbers */}
-      <div
-        ref={lineNumbersRef}
-        className="flex flex-col overflow-y-auto overflow-x-hidden bg-light-bg dark:bg-dark-bg border-r border-light-border dark:border-dark-border py-4 px-2 select-none"
-        style={{ fontSize: `${fontSize}px` }}
-      >
-        {lineNumbers.map((num) => (
-          <div
-            key={num}
-            className="text-light-text-muted dark:text-dark-text-muted text-right font-mono leading-6 px-2"
-            style={{ minHeight: '24px' }}
-          >
-            {num}
-          </div>
-        ))}
-      </div>
-
-      {/* Editor */}
-      <textarea
-        ref={textareaRef}
+    <div className="h-full w-full bg-light-surface dark:bg-dark-surface">
+      <MonacoEditor
+        height="100%"
+        language="html"
+        theme={monacoTheme}
         value={content}
-        onChange={handleInput}
-        onScroll={handleScroll}
-        className="flex-1 resize-none outline-none font-mono bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text p-4 leading-6 overflow-y-auto"
-        style={{ fontSize: `${fontSize}px` }}
-        spellCheck="false"
-        placeholder="# Start typing markdown here..."
+        onChange={handleEditorChange}
+        onMount={handleEditorDidMount}
+        options={options}
+        loading={
+          <div className="flex items-center justify-center h-full bg-light-surface dark:bg-dark-surface">
+            <div className="text-light-text-muted dark:text-dark-text-muted">Loading editor...</div>
+          </div>
+        }
       />
     </div>
   );
