@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-const Preview = ({ content, fontSize }) => {
+const Preview = ({ content, fontSize, isDragging }) => {
   const htmlContent = useMemo(() => {
     try {
       // Prepare the HTML content with Tailwind CDN injected
@@ -69,7 +69,10 @@ const Preview = ({ content, fontSize }) => {
         className="w-full h-full border-0"
         title="HTML Preview"
         sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
-        style={{ fontSize: `${fontSize}px` }}
+        style={{
+          fontSize: `${fontSize}px`,
+          pointerEvents: isDragging ? 'none' : 'auto' // Prevent iframe from intercepting mouse events during drag
+        }}
       />
     </div>
   );

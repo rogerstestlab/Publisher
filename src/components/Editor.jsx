@@ -1,7 +1,7 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 
-const Editor = forwardRef(({ content, onChange, fontSize, theme }, ref) => {
+const Editor = forwardRef(({ content, onChange, fontSize, theme, isDragging }, ref) => {
   const editorRef = useRef(null);
 
   // Expose method to insert text at cursor position (for template insertion)
@@ -92,7 +92,10 @@ const Editor = forwardRef(({ content, onChange, fontSize, theme }, ref) => {
   const monacoTheme = theme === 'dark' ? 'vs-dark' : 'vs';
 
   return (
-    <div className="h-full w-full bg-light-surface dark:bg-dark-surface">
+    <div
+      className="h-full w-full bg-light-surface dark:bg-dark-surface"
+      style={{ pointerEvents: isDragging ? 'none' : 'auto' }} // Prevent editor from intercepting mouse events during drag
+    >
       <MonacoEditor
         height="100%"
         language="html"
