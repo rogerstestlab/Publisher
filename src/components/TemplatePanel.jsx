@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 
 const TEMPLATES = {
+  'Full Pages': [],
+  'Hero Sections': [
+    {
+      name: 'Hero Section',
+      icon: '🎯',
+      template: '<section class="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-20">\n  <div class="container mx-auto text-center">\n    <h1 class="text-5xl font-bold mb-4">Welcome to Our Site</h1>\n    <p class="text-xl mb-8">Create something amazing today</p>\n    <button class="bg-white text-blue-600 font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition-colors">Get Started</button>\n  </div>\n</section>',
+      cursorOffset: 128
+    }
+  ],
   Components: [
     {
       name: 'Button',
@@ -21,18 +30,14 @@ const TEMPLATES = {
       cursorOffset: 85
     },
   ],
-  Layout: [
+  Forms: [],
+  'Content Blocks': [],
+  'Navigation & Layout': [
     {
       name: 'Navigation Bar',
       icon: '📊',
       template: '<nav class="bg-gray-800 text-white p-4">\n  <div class="container mx-auto flex justify-between items-center">\n    <div class="text-xl font-bold">Logo</div>\n    <div class="space-x-4">\n      <a href="#" class="hover:text-gray-300">Home</a>\n      <a href="#" class="hover:text-gray-300">About</a>\n      <a href="#" class="hover:text-gray-300">Contact</a>\n    </div>\n  </div>\n</nav>',
       cursorOffset: 122
-    },
-    {
-      name: 'Hero Section',
-      icon: '🎯',
-      template: '<section class="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-20">\n  <div class="container mx-auto text-center">\n    <h1 class="text-5xl font-bold mb-4">Welcome to Our Site</h1>\n    <p class="text-xl mb-8">Create something amazing today</p>\n    <button class="bg-white text-blue-600 font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition-colors">Get Started</button>\n  </div>\n</section>',
-      cursorOffset: 128
     },
     {
       name: 'Grid Layout',
@@ -51,8 +56,12 @@ const TEMPLATES = {
 
 const TemplatePanel = ({ isOpen, onToggle, onInsertTemplate }) => {
   const [expandedCategories, setExpandedCategories] = useState({
+    'Full Pages': false,
+    'Hero Sections': false,
     Components: true,
-    Layout: true,
+    Forms: false,
+    'Content Blocks': false,
+    'Navigation & Layout': true,
   });
 
   const toggleCategory = (category) => {
@@ -106,9 +115,9 @@ const TemplatePanel = ({ isOpen, onToggle, onInsertTemplate }) => {
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d2e'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <span>{category}</span>
+              <span className="text-left flex-1">{category}</span>
               <svg
-                className={`w-3 h-3 transition-transform ${expandedCategories[category] ? 'rotate-90' : ''}`}
+                className={`w-3 h-3 transition-transform flex-shrink-0 ${expandedCategories[category] ? 'rotate-90' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

@@ -1,10 +1,10 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 
-const Editor = forwardRef(({ content, onChange, fontSize, theme, isDragging }, ref) => {
+const Editor = forwardRef(({ content, onChange, fontSize, theme, isDragging, onFormat }, ref) => {
   const editorRef = useRef(null);
 
-  // Expose method to insert text at cursor position (for template insertion)
+  // Expose methods to parent component
   useImperativeHandle(
     ref,
     () => ({
@@ -38,13 +38,31 @@ const Editor = forwardRef(({ content, onChange, fontSize, theme, isDragging }, r
         editor.setPosition(newPosition);
         editor.focus();
       },
+      // Get current content from Monaco editor (for formatting)
+      getEditorContent: () => {
+        const editor = editorRef.current;
+        if (!editor) return '';
+        return editor.getValue();
+      },
     }),
     []
   );
 
-  const handleEditorDidMount = (editor) => {
+  const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
     editor.focus();
+
+    // Add keyboard shortcut for formatting (Shift+Alt+F)
+    if (onFormat) {
+      editor.addAction({
+        id: 'format-code',
+        label: 'Format Code',
+        keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF],
+        run: () => {
+          onFormat();
+        },
+      });
+    }
   };
 
   const handleEditorChange = (value) => {

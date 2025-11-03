@@ -5,6 +5,8 @@ import Preview from './components/Preview';
 import SplitPane from './components/SplitPane';
 import TemplatePanel from './components/TemplatePanel';
 import Toast from './components/Toast';
+import * as prettier from 'prettier';
+import prettierPluginHtml from 'prettier/plugins/html';
 
 const DEFAULT_CONTENT = `<!DOCTYPE html>
 <html lang="en">
@@ -240,6 +242,40 @@ function App() {
     }
   };
 
+  const handleFormatCode = async () => {
+    try {
+      // Get current content directly from Monaco editor (not from React state)
+      // This ensures we always format the latest content, especially for keyboard shortcuts
+      if (!editorRef.current) {
+        console.error('Editor ref not available');
+        return;
+      }
+
+      const currentContent = editorRef.current.getEditorContent();
+
+      if (!currentContent || currentContent.trim().length === 0) {
+        setToast({ show: true, message: 'Nothing to format' });
+        return;
+      }
+
+      // Format with Prettier
+      const formattedContent = await prettier.format(currentContent, {
+        parser: 'html',
+        plugins: [prettierPluginHtml],
+        tabWidth: 2,
+        printWidth: 100,
+        htmlWhitespaceSensitivity: 'ignore',
+      });
+
+      // Update content with formatted version
+      setContent(formattedContent);
+      setToast({ show: true, message: 'Code formatted ✓' });
+    } catch (error) {
+      console.error('Error formatting code:', error);
+      setToast({ show: true, message: 'Unable to format - check HTML syntax' });
+    }
+  };
+
   const handleThemeToggle = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
@@ -330,6 +366,7 @@ function App() {
         onOpen={handleOpen}
         onSave={handleSave}
         onExport={handleExport}
+        onFormat={handleFormatCode}
         theme={theme}
         onThemeToggle={handleThemeToggle}
         fontSize={fontSize}
@@ -349,7 +386,7 @@ function App() {
                 onInsertTemplate={handleInsertTemplate}
               />
               <div className="flex-1 h-full overflow-hidden">
-                <Editor ref={editorRef} content={content} onChange={setContent} fontSize={fontSize} theme={theme} />
+                <Editor ref={editorRef} content={content} onChange={setContent} fontSize={fontSize} theme={theme} onFormat={handleFormatCode} />
               </div>
             </div>
           }
