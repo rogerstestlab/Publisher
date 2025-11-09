@@ -38,6 +38,23 @@ const Editor = forwardRef(({ content, onChange, fontSize, theme, isDragging, onF
         editor.setPosition(newPosition);
         editor.focus();
       },
+      // Replace all editor content (for Full Pages)
+      replaceAllContent: (text, cursorOffset = 0) => {
+        const editor = editorRef.current;
+        if (!editor) return;
+
+        // Replace entire content
+        editor.setValue(text);
+
+        // Set cursor position after replacing content
+        if (cursorOffset) {
+          const model = editor.getModel();
+          const position = model.getPositionAt(cursorOffset);
+          editor.setPosition(position);
+        }
+
+        editor.focus();
+      },
       // Get current content from Monaco editor (for formatting)
       getEditorContent: () => {
         const editor = editorRef.current;

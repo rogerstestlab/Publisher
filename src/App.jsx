@@ -290,10 +290,18 @@ function App() {
     setIsPanelOpen(!isPanelOpen);
   };
 
-  const handleInsertTemplate = (template) => {
+  const handleInsertTemplate = ({ template, category }) => {
     if (editorRef.current) {
-      editorRef.current.insertTextAtCursor(template.template, template.cursorOffset);
-      setToast({ show: true, message: 'Template inserted' });
+      // Check if this is a Full Page template
+      if (category === 'Full Pages') {
+        // Replace entire content for Full Pages
+        editorRef.current.replaceAllContent(template.template, template.cursorOffset);
+        setToast({ show: true, message: 'Page template loaded' });
+      } else {
+        // Insert at cursor for all other categories
+        editorRef.current.insertTextAtCursor(template.template, template.cursorOffset);
+        setToast({ show: true, message: 'Template inserted' });
+      }
     }
   };
 

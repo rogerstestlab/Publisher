@@ -59,8 +59,6 @@ const SplitPane = ({ left, right }) => {
     const handleMouseUp = () => {
       const finalWidth = currentWidthRef.current;
 
-      console.log(`[SplitPane] Drag ended at width: ${finalWidth.toFixed(2)}%`);
-
       // Update React state with final width (single re-render at end)
       setLeftWidth(finalWidth);
       setIsDragging(false);
@@ -71,8 +69,6 @@ const SplitPane = ({ left, right }) => {
     };
 
     if (isDragging) {
-      console.log(`[SplitPane] Drag started at width: ${currentWidthRef.current.toFixed(2)}%`);
-
       // Lock cursor and prevent text selection during drag
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
