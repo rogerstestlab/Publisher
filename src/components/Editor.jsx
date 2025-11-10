@@ -3,6 +3,8 @@ import MonacoEditor from '@monaco-editor/react';
 
 const Editor = forwardRef(({ content, onChange, fontSize, theme, isDragging, onFormat }, ref) => {
   const editorRef = useRef(null);
+  const decorationsRef = useRef(null);
+  const monacoRef = useRef(null);
 
   // Expose methods to parent component
   useImperativeHandle(
@@ -61,12 +63,50 @@ const Editor = forwardRef(({ content, onChange, fontSize, theme, isDragging, onF
         if (!editor) return '';
         return editor.getValue();
       },
+      highlightLines: (startLine, endLine) => {
+        console.log('highlightLines called with:', startLine, endLine);
+        const editor = editorRef.current;
+        console.log('Editor exists:', !!editor);
+        const monaco = monacoRef.current;
+        console.log('Monaco exists:', !!monaco);
+
+        if (!editor || !monaco) return;
+
+        // Clear previous decorations
+        if (decorationsRef.current) {
+          console.log('Clearing previous decorations');
+          decorationsRef.current.clear();
+        }
+
+        console.log('Creating new decoration');
+
+        // Create new decoration
+        decorationsRef.current = editor.createDecorationsCollection([
+          {
+            range: new monaco.Range(startLine, 1, endLine, 1),
+            options: {
+              isWholeLine: true,
+              className: 'inspect-highlight',
+              glyphMarginClassName: 'inspect-glyph'
+            }
+          }
+        ]);
+
+        console.log('Decoration created');
+      },
+      clearHighlight: () => {
+        if (decorationsRef.current) {
+          decorationsRef.current.clear();
+          decorationsRef.current = null;
+        }
+      }
     }),
     []
   );
 
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
+    monacoRef.current = monaco;
     editor.focus();
 
     // Add keyboard shortcut for formatting (Shift+Alt+F)

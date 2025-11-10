@@ -13,7 +13,9 @@ const Toolbar = ({
   onFontSizeChange,
   currentFileName,
   wordCount,
-  characterCount
+  characterCount,
+  inspectModeEnabled,
+  onInspectModeToggle
 }) => {
   return (
     <div
@@ -103,6 +105,20 @@ const Toolbar = ({
         >
           <span className="text-base">✨</span>
           Format
+        </button>
+
+        {/* Inspect Mode toggle */}
+        <button
+          onClick={onInspectModeToggle}
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+            inspectModeEnabled
+              ? 'bg-blue-600 text-white'
+              : 'text-light-text dark:text-dark-text hover:bg-light-bg dark:hover:bg-dark-bg'
+          }`}
+          title="Toggle Inspect Mode"
+        >
+          <span className="text-base">🔍</span>
+          Inspect
         </button>
 
         {/* Theme toggle */}

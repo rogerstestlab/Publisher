@@ -250,3 +250,14 @@
   max-width: 100%;
   height: auto;
 }
+
+/* Inspect Mode highlighting styles */
+.inspect-highlight {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  border-left: 3px solid #3b82f6 !important;
+}
+
+.inspect-glyph {
+  background-color: #3b82f6;
+  width: 5px !important;
+}

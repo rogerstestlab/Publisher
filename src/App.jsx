@@ -115,6 +115,101 @@ const DEFAULT_CONTENT = `<!DOCTYPE html>
 </body>
 </html>`;
 
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Find line numbers for HTML element matching the selector
+function findElementLines(content, selector, innerHTML) {
+  if (!content || !selector) return null;
+
+  // Extract just the tag name
+  const tagMatch = selector.match(/^(\w+)/);
+  if (!tagMatch) return null;
+
+  const tagName = tagMatch[1].toLowerCase();
+  const searchPattern = `<${tagName}`;
+
+  const lines = content.split('\n');
+  const matches = [];
+
+  // Find all lines with this tag
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes(searchPattern)) {
+      matches.push(i);
+    }
+  }
+
+  if (matches.length === 0) return null;
+
+  // If only one match, use it
+  if (matches.length === 1) {
+    const startLine = matches[0];
+    let endLine = startLine;
+    for (let i = startLine; i < Math.min(startLine + 10, lines.length); i++) {
+      if (lines[i].includes(`</${tagName}`)) {
+        endLine = i;
+        break;
+      }
+    }
+    return { startLine: startLine + 1, endLine: endLine + 1 };
+  }
+
+  // Multiple matches - use innerHTML to find the right one
+  if (innerHTML && innerHTML.trim().length > 0) {
+    // Get a meaningful snippet from innerHTML (remove extra whitespace)
+    const contentSnippet = innerHTML
+      .trim()
+      .replace(/\s+/g, ' ')
+      .substring(0, 50);
+
+    console.log('Looking for content snippet:', contentSnippet);
+
+    for (const lineNum of matches) {
+      // Check this tag and the next 5 lines for the innerHTML content
+      const searchWindow = lines
+        .slice(lineNum, Math.min(lineNum + 6, lines.length))
+        .join(' ')
+        .replace(/\s+/g, ' ');
+
+      // Check if the content snippet appears in this section
+      if (searchWindow.includes(contentSnippet)) {
+        console.log('Found match at line:', lineNum + 1);
+
+        let endLine = lineNum;
+        for (let i = lineNum; i < Math.min(lineNum + 10, lines.length); i++) {
+          if (lines[i].includes(`</${tagName}`)) {
+            endLine = i;
+            break;
+          }
+        }
+
+        return { startLine: lineNum + 1, endLine: endLine + 1 };
+      }
+    }
+  }
+
+  // Fallback to first match if innerHTML matching fails
+  console.log('Using first match as fallback');
+  const startLine = matches[0];
+  let endLine = startLine;
+  for (let i = startLine; i < Math.min(startLine + 10, lines.length); i++) {
+    if (lines[i].includes(`</${tagName}`)) {
+      endLine = i;
+      break;
+    }
+  }
+  return { startLine: startLine + 1, endLine: endLine + 1 };
+}
+
 function App() {
   const [content, setContent] = useState('');
   const [theme, setTheme] = useState('dark');
@@ -123,6 +218,7 @@ function App() {
   const [currentFileName, setCurrentFileName] = useState(null);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [inspectModeEnabled, setInspectModeEnabled] = useState(false);
 
   const editorRef = useRef(null);
 
@@ -290,6 +386,15 @@ function App() {
     setIsPanelOpen(!isPanelOpen);
   };
 
+  const handleInspectModeToggle = () => {
+    const newValue = !inspectModeEnabled;
+    setInspectModeEnabled(newValue);
+
+    if (newValue) {
+      setToast({ show: true, message: 'Inspect Mode enabled 🔍' });
+    }
+  };
+
   const handleInsertTemplate = ({ template, category }) => {
     if (editorRef.current) {
       // Check if this is a Full Page template
@@ -353,6 +458,43 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [content, currentFilePath, theme, fontSize, currentFileName]);
 
+  // Preview iframe message listener for hover events
+  useEffect(() => {
+    console.log('Setting up message listener');
+
+    const debouncedHandler = debounce((event) => {
+      if (event.data.type !== 'element-hover') return;
+
+      const { selector, innerHTML, tagName } = event.data;
+      const matchResult = findElementLines(content, selector, innerHTML);
+
+      if (matchResult && editorRef.current) {
+        editorRef.current.highlightLines(matchResult.startLine, matchResult.endLine);
+      } else if (editorRef.current) {
+        editorRef.current.clearHighlight();
+      }
+    }, 50);
+
+    const handlePreviewMessage = (event) => {
+      debouncedHandler(event);
+    };
+
+    window.addEventListener('message', handlePreviewMessage);
+    console.log('Message listener attached');
+
+    return () => {
+      window.removeEventListener('message', handlePreviewMessage);
+      console.log('Message listener removed');
+    };
+  }, [content]);
+
+  // Clear highlights when Inspect Mode is disabled
+  useEffect(() => {
+    if (!inspectModeEnabled && editorRef.current) {
+      editorRef.current.clearHighlight();
+    }
+  }, [inspectModeEnabled]);
+
   // Menu event listeners - only set up once on mount
   useEffect(() => {
     if (!window.electronAPI) return;
@@ -382,6 +524,8 @@ function App() {
         currentFileName={currentFileName}
         wordCount={wordCount}
         characterCount={characterCount}
+        inspectModeEnabled={inspectModeEnabled}
+        onInspectModeToggle={handleInspectModeToggle}
       />
 
       <div className="flex-1 overflow-hidden flex flex-col">
@@ -398,7 +542,7 @@ function App() {
               </div>
             </div>
           }
-          right={<Preview content={content} fontSize={fontSize} />}
+          right={<Preview content={content} fontSize={fontSize} inspectModeEnabled={inspectModeEnabled} />}
         />
       </div>
 
