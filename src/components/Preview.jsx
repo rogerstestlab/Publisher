@@ -42,6 +42,7 @@ const Preview = ({ content, fontSize, inspectModeEnabled, isDragging }) => {
 <script>
 (function() {
   let hoveredElement = null;
+  let lockedElement = null;
 
   function getSelector(el) {
     if (!el || el === document.body) return 'body';
@@ -55,7 +56,45 @@ const Preview = ({ content, fontSize, inspectModeEnabled, isDragging }) => {
     return selector;
   }
 
+  // Click handler: lock/unlock element selection
+  document.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (lockedElement === e.target) {
+      // Clicking same element unlocks it
+      lockedElement.style.outline = '';
+      lockedElement = null;
+    } else {
+      // Clear previous lock if any
+      if (lockedElement) {
+        lockedElement.style.outline = '';
+      }
+
+      // Lock the new element with thicker outline
+      lockedElement = e.target;
+      lockedElement.style.outline = '3px solid #3b82f6';
+      lockedElement.style.outlineOffset = '2px';
+
+      // Send lock message to parent
+      try {
+        const message = {
+          type: 'element-hover',
+          selector: getSelector(lockedElement),
+          innerHTML: lockedElement.innerHTML.substring(0, 100),
+          tagName: lockedElement.tagName
+        };
+        window.top.postMessage(message, '*');
+      } catch (err) {
+        console.error('Error sending message:', err);
+      }
+    }
+  });
+
+  // Mouseover handler: only change highlight if no element is locked
   document.addEventListener('mouseover', function(e) {
+    if (lockedElement) return; // Don't change highlight if locked
+
     e.stopPropagation();
     const el = e.target;
 
@@ -80,7 +119,10 @@ const Preview = ({ content, fontSize, inspectModeEnabled, isDragging }) => {
     }
   });
 
+  // Mouseout handler: only remove highlight if no element is locked
   document.addEventListener('mouseout', function(e) {
+    if (lockedElement) return; // Don't remove highlight if locked
+
     if (hoveredElement) {
       hoveredElement.style.outline = '';
       hoveredElement = null;
