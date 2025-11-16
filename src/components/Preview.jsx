@@ -1,10 +1,7 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
-const Preview = ({ content, fontSize, isDragging, inspectModeEnabled }) => {
-  console.log('Preview - inspectModeEnabled:', inspectModeEnabled);
-
+const Preview = ({ content, fontSize, inspectModeEnabled, isDragging }) => {
   const htmlContent = useMemo(() => {
-    console.log('Generating preview HTML, inspectModeEnabled:', inspectModeEnabled);
 
     try {
       // Prepare the HTML content with Tailwind CDN injected
@@ -44,15 +41,6 @@ const Preview = ({ content, fontSize, isDragging, inspectModeEnabled }) => {
         const hoverScript = `
 <script>
 (function() {
-  console.log('Hover tracking script loaded and running');
-
-  if (window.parent) {
-    console.log('window.parent exists, can communicate');
-  }
-  if (window.top) {
-    console.log('window.top exists, can communicate');
-  }
-
   let hoveredElement = null;
 
   function getSelector(el) {
@@ -86,7 +74,6 @@ const Preview = ({ content, fontSize, isDragging, inspectModeEnabled }) => {
         innerHTML: el.innerHTML.substring(0, 100),
         tagName: el.tagName
       };
-      console.log('Sending message:', message);
       window.top.postMessage(message, '*');
     } catch (err) {
       console.error('Error sending message:', err);
@@ -108,8 +95,6 @@ const Preview = ({ content, fontSize, isDragging, inspectModeEnabled }) => {
         } else {
           html += hoverScript;
         }
-
-        console.log('Injected hover tracking script');
       }
 
       return html;
@@ -148,7 +133,6 @@ const Preview = ({ content, fontSize, isDragging, inspectModeEnabled }) => {
         sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-top-navigation-by-user-activation"
         style={{
           fontSize: `${fontSize}px`,
-          pointerEvents: isDragging ? 'none' : 'auto', // Prevent iframe from intercepting mouse events during drag
           cursor: inspectModeEnabled ? 'crosshair' : 'default'
         }}
       />

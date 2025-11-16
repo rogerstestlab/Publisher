@@ -13,24 +13,38 @@ const SplitPane = ({ left, right }) => {
     currentWidthRef.current = leftWidth;
   }, [leftWidth]);
 
-  // Recursively inject isDragging prop into all React elements
+  // Recursively inject isDragging prop into custom React components only (not DOM elements)
   const injectIsDragging = (children) => {
     return React.Children.map(children, (child) => {
       if (!React.isValidElement(child)) {
         return child;
       }
 
-      // Clone the element and inject isDragging
-      const clonedElement = React.cloneElement(child, { isDragging });
+      // Only inject into custom React components (functions/classes), not DOM elements (strings)
+      const isCustomComponent = typeof child.type === 'function';
 
-      // If the element has children, recursively inject into them too
+      if (isCustomComponent) {
+        // Clone the element and inject isDragging
+        const clonedElement = React.cloneElement(child, { isDragging });
+
+        // If the element has children, recursively inject into them too
+        if (child.props && child.props.children) {
+          return React.cloneElement(clonedElement, {
+            children: injectIsDragging(child.props.children)
+          });
+        }
+
+        return clonedElement;
+      }
+
+      // For DOM elements, just recursively process children without injecting isDragging
       if (child.props && child.props.children) {
-        return React.cloneElement(clonedElement, {
+        return React.cloneElement(child, {
           children: injectIsDragging(child.props.children)
         });
       }
 
-      return clonedElement;
+      return child;
     });
   };
 

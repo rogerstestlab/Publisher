@@ -171,8 +171,6 @@ function findElementLines(content, selector, innerHTML) {
       .replace(/\s+/g, ' ')
       .substring(0, 50);
 
-    console.log('Looking for content snippet:', contentSnippet);
-
     for (const lineNum of matches) {
       // Check this tag and the next 5 lines for the innerHTML content
       const searchWindow = lines
@@ -182,7 +180,6 @@ function findElementLines(content, selector, innerHTML) {
 
       // Check if the content snippet appears in this section
       if (searchWindow.includes(contentSnippet)) {
-        console.log('Found match at line:', lineNum + 1);
 
         let endLine = lineNum;
         for (let i = lineNum; i < Math.min(lineNum + 10, lines.length); i++) {
@@ -198,7 +195,6 @@ function findElementLines(content, selector, innerHTML) {
   }
 
   // Fallback to first match if innerHTML matching fails
-  console.log('Using first match as fallback');
   const startLine = matches[0];
   let endLine = startLine;
   for (let i = startLine; i < Math.min(startLine + 10, lines.length); i++) {
@@ -460,8 +456,6 @@ function App() {
 
   // Preview iframe message listener for hover events
   useEffect(() => {
-    console.log('Setting up message listener');
-
     const debouncedHandler = debounce((event) => {
       if (event.data.type !== 'element-hover') return;
 
@@ -480,11 +474,9 @@ function App() {
     };
 
     window.addEventListener('message', handlePreviewMessage);
-    console.log('Message listener attached');
 
     return () => {
       window.removeEventListener('message', handlePreviewMessage);
-      console.log('Message listener removed');
     };
   }, [content]);
 
