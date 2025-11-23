@@ -1,3 +1,9 @@
+/*
+ * Publisher - A professional HTML code editor with live preview
+ * Copyright (c) 2025 Rogers Test Lab
+ * Licensed under MIT License
+ */
+
 const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;

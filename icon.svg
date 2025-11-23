@@ -1,0 +1,16 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- White background -->
+  <rect width="1024" height="1024" fill="#ffffff" rx="180"/>
+
+  <!-- Code symbol </> in blue -->
+  <g fill="none" stroke="#3b82f6" stroke-width="80" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left angle bracket < -->
+    <path d="M 380 300 L 220 512 L 380 724"/>
+
+    <!-- Forward slash / -->
+    <path d="M 460 724 L 564 300"/>
+
+    <!-- Right angle bracket > -->
+    <path d="M 644 300 L 804 512 L 644 724"/>
+  </g>
+</svg>

@@ -1,7 +1,8 @@
 {
-  "name": "markdown-previewer",
+  "name": "publisher",
+  "productName": "Publisher",
   "version": "1.0.0",
-  "description": "A modern Electron markdown previewer app",
+  "description": "A professional HTML code editor with live preview, Tailwind CSS support, and 30+ templates",
   "main": "main.js",
   "scripts": {
     "dev": "vite",
@@ -9,18 +10,35 @@
     "preview": "vite preview",
     "electron": "electron .",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "package": "npm run build && electron-builder"
+    "package": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:linux": "npm run build && electron-builder --linux"
   },
   "keywords": [
-    "electron",
-    "markdown",
-    "previewer"
+    "html",
+    "editor",
+    "code editor",
+    "tailwind",
+    "templates",
+    "live preview",
+    "electron"
   ],
-  "author": "roger",
-  "license": "ISC",
+  "author": {
+    "name": "Roger",
+    "email": "rogerstestlab@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rogerstestlab/Publisher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerstestlab/Publisher/issues"
+  },
+  "homepage": "https://github.com/rogerstestlab/Publisher#readme",
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
-    "electron": "^38.4.0",
     "highlight.js": "^11.11.1",
     "marked": "^16.4.1",
     "prettier": "^3.6.2",
@@ -31,10 +49,144 @@
     "@vitejs/plugin-react": "^5.1.0",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.1",
+    "electron": "^38.4.0",
     "electron-builder": "^26.0.12",
+    "electron-icon-maker": "^0.0.5",
+    "png-to-ico": "^3.0.1",
     "postcss": "^8.5.6",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.18",
     "vite": "^7.1.12",
     "wait-on": "^9.0.1"
+  },
+  "build": {
+    "appId": "com.publisher.htmleditor",
+    "productName": "Publisher",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "fileAssociations": [
+      {
+        "ext": "html",
+        "name": "HTML File",
+        "description": "HTML Document",
+        "role": "Editor",
+        "icon": "build/fileIcon"
+      },
+      {
+        "ext": "htm",
+        "name": "HTM File",
+        "description": "HTML Document",
+        "role": "Editor",
+        "icon": "build/fileIcon"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "title": "${productName} ${version}",
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "${productName}",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "displayLanguageSelector": false,
+      "runAfterFinish": true
+    },
+    "linux": {
+      "icon": "build/icons",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Development",
+      "synopsis": "Professional HTML Code Editor",
+      "description": "A professional HTML code editor with live preview, Tailwind CSS support, and 30+ templates for rapid web development."
+    }
   }
 }

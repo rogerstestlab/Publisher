@@ -1,3 +1,9 @@
+/*
+ * Publisher - A professional HTML code editor with live preview
+ * Copyright (c) 2025 Rogers Test Lab
+ * Licensed under MIT License
+ */
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Toolbar from './components/Toolbar';
 import Editor from './components/Editor';
@@ -5,6 +11,7 @@ import Preview from './components/Preview';
 import SplitPane from './components/SplitPane';
 import TemplatePanel from './components/TemplatePanel';
 import Toast from './components/Toast';
+import StatusBar from './components/StatusBar';
 import * as prettier from 'prettier';
 import prettierPluginHtml from 'prettier/plugins/html';
 
@@ -215,11 +222,12 @@ function App() {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [toast, setToast] = useState({ show: false, message: '' });
   const [inspectModeEnabled, setInspectModeEnabled] = useState(false);
+  const [savedContent, setSavedContent] = useState('');
 
   const editorRef = useRef(null);
 
-  // Calculate word and character counts
-  const { wordCount, characterCount } = useMemo(() => {
+  // Calculate word, character, and line counts
+  const { wordCount, characterCount, lineCount } = useMemo(() => {
     // Character count includes all characters
     const charCount = content.length;
 
@@ -228,19 +236,25 @@ function App() {
       .split(/\s+/)
       .filter(word => word.trim().length > 0);
 
+    // Line count: count newlines + 1
+    const lines = content.split('\n').length;
+
     return {
       wordCount: words.length,
-      characterCount: charCount
+      characterCount: charCount,
+      lineCount: lines
     };
   }, [content]);
 
   // Load saved content and preferences on mount
   useEffect(() => {
-    const savedContent = localStorage.getItem('html-editor-content');
+    const savedContentFromStorage = localStorage.getItem('html-editor-content');
     const savedTheme = localStorage.getItem('html-editor-theme');
     const savedFontSize = localStorage.getItem('html-editor-fontSize');
 
-    setContent(savedContent || DEFAULT_CONTENT);
+    const initialContent = savedContentFromStorage || DEFAULT_CONTENT;
+    setContent(initialContent);
+    setSavedContent(initialContent);
     setTheme(savedTheme || 'dark');
     setFontSize(parseInt(savedFontSize) || 14);
   }, []);
@@ -254,6 +268,14 @@ function App() {
     }
     localStorage.setItem('html-editor-theme', theme);
   }, [theme]);
+
+  // Update window title based on filename and saved state
+  useEffect(() => {
+    const hasUnsavedChanges = content !== savedContent;
+    const unsavedIndicator = hasUnsavedChanges ? '* ' : '';
+    const fileName = currentFileName || 'Untitled';
+    document.title = `${unsavedIndicator}${fileName} - HTML Editor`;
+  }, [content, savedContent, currentFileName]);
 
   // Auto-save content to localStorage
   useEffect(() => {
@@ -275,6 +297,7 @@ function App() {
       if (!confirmed) return;
     }
     setContent(DEFAULT_CONTENT);
+    setSavedContent(DEFAULT_CONTENT);
     setCurrentFilePath(null);
     setCurrentFileName(null);
   };
@@ -289,6 +312,7 @@ function App() {
       const result = await window.electronAPI.openFile();
       if (result) {
         setContent(result.content);
+        setSavedContent(result.content);
         setCurrentFilePath(result.filePath);
         setCurrentFileName(result.filePath.split('/').pop());
       }
@@ -307,6 +331,7 @@ function App() {
     try {
       const filePath = await window.electronAPI.saveFile(content, currentFilePath);
       if (filePath) {
+        setSavedContent(content);
         setCurrentFilePath(filePath);
         setCurrentFileName(filePath.split('/').pop());
       }
@@ -421,6 +446,7 @@ function App() {
       const result = await window.electronAPI.openRecentFile(filePath);
       if (result) {
         setContent(result.content);
+        setSavedContent(result.content);
         setCurrentFilePath(result.filePath);
         setCurrentFileName(result.filePath.split('/').pop());
       } else {
@@ -447,12 +473,15 @@ function App() {
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
         e.preventDefault();
         handleExport();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+        e.preventDefault();
+        handleTogglePanel();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [content, currentFilePath, theme, fontSize, currentFileName]);
+  }, [content, currentFilePath, theme, fontSize, currentFileName, isPanelOpen]);
 
   // Preview iframe message listener for hover events
   useEffect(() => {
@@ -537,6 +566,8 @@ function App() {
           right={<Preview content={content} fontSize={fontSize} inspectModeEnabled={inspectModeEnabled} />}
         />
       </div>
+
+      <StatusBar lineCount={lineCount} characterCount={characterCount} />
 
       <Toast show={toast.show} message={toast.message} onClose={handleCloseToast} />
     </div>

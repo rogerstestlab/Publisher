@@ -163,9 +163,27 @@ const Editor = forwardRef(({ content, onChange, fontSize, theme, isDragging, onF
 
   return (
     <div
-      className="h-full w-full bg-light-surface dark:bg-dark-surface"
+      className="h-full w-full bg-light-surface dark:bg-dark-surface relative"
       style={{ pointerEvents: isDragging ? 'none' : 'auto' }} // Prevent editor from intercepting mouse events during drag
     >
+      {/* Welcome message overlay when editor is empty */}
+      {(!content || content.trim().length === 0) && (
+        <div
+          className="absolute top-0 left-0 pointer-events-none z-10 px-4 py-2"
+          style={{
+            fontFamily: "'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace",
+            fontSize: `${fontSize}px`,
+            color: '#6b7280',
+            lineHeight: '1.5'
+          }}
+        >
+          {/* Empty line for line number alignment */}
+          <div style={{ paddingLeft: '50px' }}>
+            &lt;!-- Welcome to HTML Editor! Press Ctrl+T to browse templates --&gt;
+          </div>
+        </div>
+      )}
+
       <MonacoEditor
         height="100%"
         language="html"

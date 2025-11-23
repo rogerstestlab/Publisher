@@ -193,11 +193,71 @@ const TemplatePanel = ({ isOpen, onToggle, onInsertTemplate }) => {
     'Navigation & Layout': true,
   });
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
   const toggleCategory = (category) => {
     setExpandedCategories((prev) => ({
       ...prev,
       [category]: !prev[category],
     }));
+  };
+
+  // Get all unique categories
+  const allCategories = ['All', ...Object.keys(TEMPLATES)];
+
+  // Filter templates based on search and category
+  const getFilteredTemplates = () => {
+    const filtered = {};
+    let totalCount = 0;
+
+    Object.entries(TEMPLATES).forEach(([category, templates]) => {
+      // Filter by selected category
+      if (selectedCategory !== 'All' && category !== selectedCategory) {
+        return;
+      }
+
+      // Filter by search term
+      const matchingTemplates = templates.filter(template =>
+        template.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      if (matchingTemplates.length > 0) {
+        filtered[category] = matchingTemplates;
+        totalCount += matchingTemplates.length;
+      }
+    });
+
+    return { filtered, totalCount };
+  };
+
+  const { filtered: filteredTemplates, totalCount } = getFilteredTemplates();
+
+  // Highlight matching text in template names
+  const highlightText = (text, highlight) => {
+    if (!highlight.trim()) {
+      return <span>{text}</span>;
+    }
+
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return (
+      <span>
+        {parts.map((part, index) =>
+          part.toLowerCase() === highlight.toLowerCase() ? (
+            <span key={index} style={{ backgroundColor: '#4e4e1a', color: '#ffd700' }}>
+              {part}
+            </span>
+          ) : (
+            part
+          )
+        )}
+      </span>
+    );
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSelectedCategory('All');
   };
 
   if (!isOpen) {
@@ -232,50 +292,113 @@ const TemplatePanel = ({ isOpen, onToggle, onInsertTemplate }) => {
         </button>
       </div>
 
-      {/* Template Categories */}
-      <div className="flex-1 overflow-y-auto">
-        {Object.entries(TEMPLATES).map(([category, templates]) => (
-          <div key={category} className="border-b" style={{ borderColor: '#3e3e42' }}>
-            {/* Category Header */}
+      {/* Search and Filter Section */}
+      <div className="px-2 py-2 border-b" style={{ borderColor: '#3e3e42' }}>
+        {/* Search Input */}
+        <div className="relative mb-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search..."
+            className="w-full px-2 py-1 text-xs rounded transition-colors"
+            style={{
+              backgroundColor: '#3c3c3c',
+              border: '1px solid #3e3e42',
+              color: '#cccccc',
+              outline: 'none'
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#007acc'}
+            onBlur={(e) => e.target.style.borderColor = '#3e3e42'}
+          />
+          {searchTerm && (
             <button
-              onClick={() => toggleCategory(category)}
-              className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-colors"
-              style={{ color: '#8c8c8c' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d2e'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onClick={clearSearch}
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-600 rounded transition-colors"
+              title="Clear search"
             >
-              <span className="text-left flex-1">{category}</span>
-              <svg
-                className={`w-3 h-3 transition-transform flex-shrink-0 ${expandedCategories[category] ? 'rotate-90' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg className="w-3 h-3" style={{ color: '#8c8c8c' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          )}
+        </div>
 
-            {/* Template Buttons */}
-            {expandedCategories[category] && (
-              <div className="py-1">
-                {templates.map((template) => (
-                  <button
-                    key={template.name}
-                    onClick={() => onInsertTemplate({ template, category })}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors text-left"
-                    style={{ color: '#cccccc' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d2e'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    title={template.name}
-                  >
-                    <span className="text-sm">{template.icon}</span>
-                    <span className="truncate">{template.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* Category Dropdown */}
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="w-full px-2 py-1 text-xs rounded transition-colors"
+          style={{
+            backgroundColor: '#3c3c3c',
+            border: '1px solid #3e3e42',
+            color: '#cccccc',
+            outline: 'none'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#007acc'}
+          onBlur={(e) => e.target.style.borderColor = '#3e3e42'}
+        >
+          {allCategories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+
+        {/* Results Count */}
+        <div className="mt-2 text-xs" style={{ color: '#8c8c8c' }}>
+          {totalCount} {totalCount === 1 ? 'template' : 'templates'}
+        </div>
+      </div>
+
+      {/* Template Categories */}
+      <div className="flex-1 overflow-y-auto">
+        {Object.keys(filteredTemplates).length === 0 ? (
+          <div className="px-3 py-4 text-xs text-center" style={{ color: '#8c8c8c' }}>
+            No templates found
           </div>
-        ))}
+        ) : (
+          Object.entries(filteredTemplates).map(([category, templates]) => (
+            <div key={category} className="border-b" style={{ borderColor: '#3e3e42' }}>
+              {/* Category Header */}
+              <button
+                onClick={() => toggleCategory(category)}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-colors"
+                style={{ color: '#8c8c8c' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d2e'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <span className="text-left flex-1">{category}</span>
+                <svg
+                  className={`w-3 h-3 transition-transform flex-shrink-0 ${expandedCategories[category] ? 'rotate-90' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Template Buttons */}
+              {expandedCategories[category] && (
+                <div className="py-1">
+                  {templates.map((template) => (
+                    <button
+                      key={template.name}
+                      onClick={() => onInsertTemplate({ template, category })}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors text-left"
+                      style={{ color: '#cccccc' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d2e'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      title={template.name}
+                    >
+                      <span className="text-sm">{template.icon}</span>
+                      <span className="truncate">{highlightText(template.name, searchTerm)}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
